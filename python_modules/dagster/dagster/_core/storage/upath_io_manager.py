@@ -151,7 +151,16 @@ class UPathIOManager(MemoizableIOManager):
         path.mkdir(parents=True, exist_ok=True)
 
     def has_output(self, context: OutputContext) -> bool:
-        return self.path_exists(self._get_path(context))
+        if context.has_partition_key:
+            path = self._with_extension(
+                self.get_path_for_partition(
+                    context, self._get_path_without_extension(context), context.partition_key
+                )
+            )
+        else:
+            path = self._get_path(context)
+
+        return self.path_exists(path)
 
     def _with_extension(self, path: "UPath") -> "UPath":
         return path.with_suffix(path.suffix + self.extension) if self.extension else path
